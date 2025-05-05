@@ -46,7 +46,7 @@ def generate_launch_description():
             respawn=True
         ),
         Node(
-            package='bolide_teleop',
+            package='bolide_wall_follow',
             executable='wall_follow',
             name='wall_follow',
             output='screen',
