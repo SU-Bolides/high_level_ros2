@@ -35,7 +35,7 @@ class WallFollow(Node):
         # PARAMETERS
         self.declare_parameter('kp', 14.0)
         self.declare_parameter('ki', 0.0)
-        self.declare_parameter('kd', 1.0)
+        self.declare_parameter('kd', 2.0)
 
 
         # PID CONTROL PARAMS
@@ -91,7 +91,7 @@ class WallFollow(Node):
         if (abs(drive_msg.data) >= 0.0 and abs(drive_msg.data) < 0.5):
             speed_msg.data = 0.1
         elif (abs(drive_msg.data) >= 0.5 and abs(drive_msg.data) <= 1.0):
-            speed_msg.data = 0.12
+            speed_msg.data = 0.2
         else:
             speed_msg.data = 0.05
         self.pub_dir.publish(drive_msg)
