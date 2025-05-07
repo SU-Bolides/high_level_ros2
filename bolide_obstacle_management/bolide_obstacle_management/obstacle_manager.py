@@ -8,15 +8,10 @@ class ObstacleManager(Node):
         super().__init__('obstacle_manager')
 
         # Subscriber : écoute l'état de l'obstacle
-        self.subscription = self.create_subscription(
-            Bool,
-            'obstacle_detected',  # à adapter selon ton capteur
-            self.obstacle_callback,
-            10
-        )
+        self.subscription = self.create_subscription(Bool, '/obstacle_detected', self.obstacle_callback, 10)
 
         # Publisher : publie des commandes de direction
-        self.publisher_ = self.create_publisher(String, 'cmd_dir', 10)
+        self.publisher_ = self.create_publisher(String, '/cmd_dir', 10)
 
     def obstacle_callback(self, msg):
         if msg.data:
