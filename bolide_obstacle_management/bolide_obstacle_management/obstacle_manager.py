@@ -2,15 +2,15 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, Bool
 
+# WORK IN PROGRESS - NEVER BEEN TESTED AND NOT FINISH AND NEED TO BE FIX
 class ObstacleManager(Node):
 
     def __init__(self):
         super().__init__('obstacle_manager')
 
-        # Subscriber : écoute l'état de l'obstacle
+        # OUBLISHER AND SUBSCRIBER
         self.subscription = self.create_subscription(Bool, '/obstacle_detected', self.obstacle_callback, 10)
 
-        # Publisher : publie des commandes de direction
         self.publisher_ = self.create_publisher(String, '/cmd_dir', 10)
 
     def obstacle_callback(self, msg):
