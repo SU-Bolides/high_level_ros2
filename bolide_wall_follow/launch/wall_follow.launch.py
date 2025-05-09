@@ -33,15 +33,15 @@ def generate_launch_description():
         ),
         Node(
             package='bolide_stm32',
-            executable='cmd_vel',
-            name='cmd_vel',
+            executable='cmd_vel_node',
+            name='cmd_vel_node',
             output='screen',
             respawn=True
         ),
         Node(
             package='bolide_direction',
-            executable='cmd_dir',
-            name='cmd_dir',
+            executable='cmd_dir_node',
+            name='cmd_dir_node',
             output='screen',
             respawn=True
         ),
