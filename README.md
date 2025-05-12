@@ -14,6 +14,19 @@ The official Sorbonne University ROS2 repository for the CoVaPsy course at ENS P
 This package is a simple PID controller to keep the car at a given distance from a wall. The controller is based on the controller created for the F1 Tenth course project at the University of Pennsylvania, you can find the lessons [here](https://f1tenth-coursekit.readthedocs.io/en/latest/lectures/ModuleB/lecture04.html) and the code [here](https://github.com/CL2-UWaterloo/f1tenth_ws/tree/main/src/wall_follow).
 
 ![](./images/diag_wall_follow_scheme.png)
+
+We use our Lidar to get two distances at certain angles:
+- b need to be at 90° or -90° of the car like in the graph.
+- a need to be around [50: 70] or [-50: -70] degrees
+- $\theta$ is the angle between the two distances (b-a)
+
+With the distances and $\theta$, we can find $\alpha$ with :
+\[\alpha=\arctan{\left(\frac{a\cos{(\theta)}-b}{a\sin{(\theta)}}\right)}\]
+
+Now with this angle, we can easily find the distance $D_t$ between A and B:
+\[D_t=b\cos{(\alpha)}\]
+
+This $D_t$ is the actual distance of the car from the wall. We want the car to be at a constant distance $D$ of the wall (e.g 1m), we calcul the error by $\epsilon=D-D_t$. This error will be transform into a steering angle by applying to it a PID controller.
 TODO - add clear explanation of the method
 
 For now this controller is not perfect for various reasons :

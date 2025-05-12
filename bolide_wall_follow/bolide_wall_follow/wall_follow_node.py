@@ -59,7 +59,7 @@ class WallFollow(Node):
     def get_error(self, scan_msg, dist):
         a = get_range(scan_msg, to_radians(-50.0))
         b = get_range(scan_msg, to_radians(-90.0))
-        theta = to_radians(40.0)  # 90-50 = 40°
+        theta = to_radians(40.0)  # -90 - (-50) = 40°
         alpha = atan((a * cos(theta) - b)/(a * sin(theta)))
         D_t = b * cos(alpha)
         self.get_logger().info(f"D_t : {D_t}")
@@ -89,9 +89,9 @@ class WallFollow(Node):
         self.get_logger().info(f"drive direction {drive_msg.data}")
         # TODO check this
         if (abs(drive_msg.data) >= 0.0 and abs(drive_msg.data) < 0.5):
-            speed_msg.data = 0.1
-        elif (abs(drive_msg.data) >= 0.5 and abs(drive_msg.data) <= 1.0):
             speed_msg.data = 0.2
+        elif (abs(drive_msg.data) >= 0.5 and abs(drive_msg.data) <= 1.0):
+            speed_msg.data = 0.1
         else:
             speed_msg.data = 0.05
         self.pub_dir.publish(drive_msg)
