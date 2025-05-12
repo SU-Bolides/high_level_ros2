@@ -13,6 +13,7 @@ The official Sorbonne University ROS2 repository for the CoVaPsy course at ENS P
 #### Wall Follower
 This package is a simple PID controller to keep the car at a given distance from a wall. The controller is based on the controller created for the F1 Tenth course project at the University of Pennsylvania, you can find the lessons [here](https://f1tenth-coursekit.readthedocs.io/en/latest/lectures/ModuleB/lecture04.html) and the code [here](https://github.com/CL2-UWaterloo/f1tenth_ws/tree/main/src/wall_follow).
 
+![](./images/diag_wall_follow_scheme.png)
 TODO - add clear explanation of the method
 
 For now this controller is not perfect for various reasons :
