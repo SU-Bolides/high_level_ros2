@@ -46,6 +46,13 @@ def generate_launch_description():
             respawn=True
         ),
         Node(
+            package='check_obstacle',
+            executable='obstacle_checker',
+            name='obstacle_checker',
+            output='screen',
+            respawn=True
+        ),
+        Node(
             package='bolide_wall_follow',
             executable='wall_follow',
             name='wall_follow',

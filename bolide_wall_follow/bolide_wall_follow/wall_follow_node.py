@@ -7,7 +7,7 @@ from rclpy.node import Node
 from bolide_interfaces.msg import SpeedDirection
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Bool
 
 # HELPERS FUNCTIONS
 
@@ -49,12 +49,30 @@ class WallFollow(Node):
         self.start_t = -1
         self.curr_t = 0.0
         self.prev_t = 0.0
+        
+        # EMERGENCY STOP STATE
+        self.emergency_stop_active = False
 
         # PUBLISHER AND SUBSCRIBER
         self.pub_speed = self.create_publisher(Float32, '/cmd_vel', 10)
         self.pub_dir = self.create_publisher(Float32, '/cmd_dir', 10)
 
         self.sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
+        
+        # NOUVEAU: Subscriber pour l'arret d'urgence
+        self.sub_emergency = self.create_subscription(
+            Bool, '/emergency_stop', self.emergency_callback, 10)
+        
+        self.get_logger().info("Wall Follow Node Started - Listening to /emergency_stop")
+    
+    def emergency_callback(self, msg: Bool):
+        """Callback pour recevoir l'etat d'urgence de obstacle_checker"""
+        if msg.data and not self.emergency_stop_active:
+            self.get_logger().warn("EMERGENCY STOP received from obstacle_checker!")
+            self.emergency_stop_active = True
+        elif not msg.data and self.emergency_stop_active:
+            self.get_logger().info("Emergency cleared - Resuming wall follow")
+            self.emergency_stop_active = False
 
     def get_error(self, scan_msg, dist):
         a = get_range(scan_msg, to_radians(-50.0))
@@ -72,6 +90,7 @@ class WallFollow(Node):
         if self.start_t == 0.0:
             self.start_t = self.curr_t
         self.get_logger().info(f"error is {self.error}, a {a} et b {b}")
+
     def pid_control(self):
         a = time.time()
         angle = 0.0
@@ -98,6 +117,12 @@ class WallFollow(Node):
         self.pub_speed.publish(speed_msg)
 
     def scan_callback(self, scan_msg):
+        # PRIORITE 1: Verifier si arret d'urgence actif
+        if self.emergency_stop_active:
+            # Ne rien faire, obstacle_checker gere l'arret
+            return
+        
+        # PRIORITE 2: Suivi de mur normal
         self.get_error(scan_msg, 0.8)
         self.pid_control()
 
