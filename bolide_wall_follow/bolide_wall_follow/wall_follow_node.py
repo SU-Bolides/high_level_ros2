@@ -89,11 +89,11 @@ class WallFollow(Node):
         self.get_logger().info(f"drive direction {drive_msg.data}")
         # TODO check this
         if (abs(drive_msg.data) >= 0.0 and abs(drive_msg.data) < 0.5):
-            speed_msg.data = 0.2
+            speed_msg.data = 0.04
         elif (abs(drive_msg.data) >= 0.5 and abs(drive_msg.data) <= 1.0):
-            speed_msg.data = 0.1
+            speed_msg.data = 0.02
         else:
-            speed_msg.data = 0.05
+            speed_msg.data = 0.03
         self.pub_dir.publish(drive_msg)
         self.pub_speed.publish(speed_msg)
 
