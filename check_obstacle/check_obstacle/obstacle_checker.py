@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 Noeud de detection d'obstacles et arret d'urgence
-Verifie la presence d'obstacles dans un arc avant (-160 a 160 deg)
+Verifie la presence d'obstacles DEVANT UNIQUEMENT (150-210 deg, 180°=front)
 et declenche un arret d'urgence si necessaire.
+Recule automatiquement si obstacle a 30cm ou moins.
 """
 
 import rclpy
@@ -10,6 +11,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Float32, Bool
 import math
+import time
 
 
 class ObstacleChecker(Node):
@@ -17,16 +19,27 @@ class ObstacleChecker(Node):
         super().__init__('obstacle_checker')
         
         # Parametres
-        self.declare_parameter('obstacle_distance', 0.4)
+        self.declare_parameter('obstacle_distance', 0.3)
         self.declare_parameter('debug', True)
+        self.declare_parameter('neutral_duration', 2)  # Duree phase neutre (secondes)
+        self.declare_parameter('reverse_duration', 1)  # Duree recul (secondes)
+        self.declare_parameter('reverse_speed', -0.06)   # Vitesse de recul
         
         self.obstacle_distance = self.get_parameter('obstacle_distance').value
         self.debug = self.get_parameter('debug').value
+        self.neutral_duration = self.get_parameter('neutral_duration').value
+        self.reverse_duration = self.get_parameter('reverse_duration').value
+        self.reverse_speed = self.get_parameter('reverse_speed').value
         
         # Etat
         self.emergency_active = False
         self.last_obstacle_angle = 0
         self.last_obstacle_distance = 0.0
+        
+        # Machine d'etats pour le recul
+        # Etats possibles: 'normal', 'stopping', 'neutral', 'reversing'
+        self.state = 'normal'
+        self.state_start_time = 0.0
         
         # Publishers
         self.pub_speed = self.create_publisher(Float32, '/cmd_vel', 10)
@@ -37,21 +50,64 @@ class ObstacleChecker(Node):
         self.sub_scan = self.create_subscription(
             LaserScan, '/scan', self.scan_callback, 10)
         
+        # Timer pour gerer les sequences temporelles
+        self.timer = self.create_timer(0.1, self.state_machine_update)
+        
         self.get_logger().info("=" * 60)
         self.get_logger().info("Obstacle Checker Node Started")
-        self.get_logger().info(f"Detection range: -160 to 160 degrees")
+        self.get_logger().info(f"Detection arc: 150° to 210° (180°=FRONT, ±30°)")
         self.get_logger().info(f"Obstacle threshold: {self.obstacle_distance}m")
+        self.get_logger().info(f"Neutral duration: {self.neutral_duration}s")
+        self.get_logger().info(f"Reverse duration: {self.reverse_duration}s")
+        self.get_logger().info(f"Reverse speed: {self.reverse_speed}m/s")
         self.get_logger().info("=" * 60)
     
+    def state_machine_update(self):
+        """Gere les transitions d'etats temporelles."""
+        current_time = time.time()
+        elapsed = current_time - self.state_start_time
+        
+        if self.state == 'stopping':
+            # Attendre un peu avant de passer au neutre
+            if elapsed >= 0.2:
+                self.get_logger().info("Phase NEUTRE - Preparation au recul")
+                self.state = 'neutral'
+                self.state_start_time = current_time
+                self.set_neutral()
+        
+        elif self.state == 'neutral':
+            # Phase neutre avant recul
+            if elapsed >= self.neutral_duration:
+                self.get_logger().warn(f"RECUL en cours ({self.reverse_duration}s)")
+                self.state = 'reversing'
+                self.state_start_time = current_time
+                self.reverse_vehicle()
+        
+        elif self.state == 'reversing':
+            # Continuer de reculer
+            self.reverse_vehicle()
+            
+            # Fin du recul
+            if elapsed >= self.reverse_duration:
+                self.get_logger().info("Recul termine - Retour au mode normal")
+                self.state = 'normal'
+                self.emergency_active = False
+                self.stop_vehicle()
+    
     def scan_callback(self, msg: LaserScan):
-        """Verifie la presence d'obstacles dans l'arc avant."""
+        """Verifie la presence d'obstacles DEVANT UNIQUEMENT (150-210 deg)."""
+        
+        # Si on est en train de reculer, ignorer le scan
+        if self.state in ['stopping', 'neutral', 'reversing']:
+            return
         
         obstacle_detected = False
         min_distance = float('inf')
         min_angle = 0
         
-        # Scanner l'arc de -165 a 165 degres
-        for angle_deg in range(-165, 165, 5):
+        # Scanner UNIQUEMENT l'arc DEVANT: 150° à 210° (180° ± 30°)
+        # 180° = devant de la voiture
+        for angle_deg in range(150, 211, 5):
             angle_rad = math.radians(angle_deg)
             
             # Verifier que l'angle est dans la plage du LIDAR
@@ -77,7 +133,7 @@ class ObstacleChecker(Node):
                 min_distance = distance
                 min_angle = angle_deg
             
-            # Verifier si obstacle trop proche
+            # Verifier si obstacle trop proche DEVANT
             if distance < self.obstacle_distance:
                 obstacle_detected = True
         
@@ -86,13 +142,15 @@ class ObstacleChecker(Node):
             if not self.emergency_active:
                 # Premier declenchement
                 self.get_logger().error(
-                    f"ARRET D'URGENCE! Obstacle a {min_distance:.2f}m (angle {min_angle}deg)")
+                    f"OBSTACLE DEVANT! Distance: {min_distance:.2f}m (angle {min_angle}°)")
                 self.emergency_active = True
                 self.last_obstacle_angle = min_angle
                 self.last_obstacle_distance = min_distance
-            
-            # Publier l'arret
-            self.stop_vehicle()
+                
+                # Demarrer la sequence de recul
+                self.state = 'stopping'
+                self.state_start_time = time.time()
+                self.stop_vehicle()
             
             # Publier l'etat d'urgence
             emergency_msg = Bool()
@@ -101,13 +159,13 @@ class ObstacleChecker(Node):
             
             if self.debug:
                 self.get_logger().debug(
-                    f"Emergency active - Obstacle: {min_distance:.2f}m at {min_angle}deg")
+                    f"Emergency active - Obstacle DEVANT: {min_distance:.2f}m at {min_angle}°")
         
         else:
-            # Pas d'obstacle
-            if self.emergency_active:
+            # Pas d'obstacle DEVANT
+            if self.emergency_active and self.state == 'normal':
                 self.get_logger().info(
-                    f"Voie libre - Distance minimale: {min_distance:.2f}m at {min_angle}deg")
+                    f"Voie DEVANT libre - Distance: {min_distance:.2f}m")
                 self.emergency_active = False
             
             # Publier l'etat normal
@@ -115,9 +173,9 @@ class ObstacleChecker(Node):
             emergency_msg.data = False
             self.pub_emergency.publish(emergency_msg)
             
-            if self.debug:
+            if self.debug and self.state == 'normal':
                 self.get_logger().debug(
-                    f"Clear path - Min distance: {min_distance:.2f}m at {min_angle}deg")
+                    f"Clear path FRONT - Min distance: {min_distance:.2f}m at {min_angle}°")
     
     def stop_vehicle(self):
         """Arrete la voiture en envoyant vitesse et direction a zero."""
@@ -129,6 +187,30 @@ class ObstacleChecker(Node):
         
         self.pub_speed.publish(stop_speed)
         self.pub_dir.publish(stop_dir)
+    
+    def set_neutral(self):
+        """Phase neutre (vitesse 0) avant de reculer."""
+        neutral_speed = Float32()
+        neutral_dir = Float32()
+        
+        neutral_speed.data = 0.0
+        neutral_dir.data = 0.0
+        
+        self.pub_speed.publish(neutral_speed)
+        self.pub_dir.publish(neutral_dir)
+    
+    def reverse_vehicle(self):
+        """Recule la voiture."""
+
+        self.set_neutral()  # Assurer que la voiture est a l'arret avant de reculer
+        reverse_speed = Float32()
+        reverse_dir = Float32()
+        
+        reverse_speed.data = self.reverse_speed  # Vitesse negative pour reculer
+        reverse_dir.data = 0.0  # Direction droite
+        
+        self.pub_speed.publish(reverse_speed)
+        self.pub_dir.publish(reverse_dir)
 
 
 def main(args=None):
