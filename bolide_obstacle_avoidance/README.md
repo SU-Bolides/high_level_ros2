@@ -32,8 +32,19 @@ Si un obstacle est détecté devant (distance moyenne < seuil), l'algorithme cho
 ## Lancement
 
 ```bash
+# Lancement complet avec tous les nœuds nécessaires
+ros2 launch bolide_obstacle_avoidance obstacle_avoidance.launch
+
+# Ou lancement individuel du nœud
 ros2 run bolide_obstacle_avoidance obstacle_avoidance_node
 ```
+
+Le launch file inclut automatiquement :
+- Le nœud Lidar (sllidar_ros2)
+- Les nœuds STM32 (capteurs et contrôle moteur)
+- Le nœud de contrôle de direction
+- Le nœud de détection d'urgence (check_obstacle)
+- Le nœud d'évitement d'obstacles principal
 
 ## Architecture
 
