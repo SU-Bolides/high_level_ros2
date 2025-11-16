@@ -24,6 +24,7 @@ setup(
     entry_points={
         'console_scripts': [
             'wall_follow=bolide_wall_follow.wall_follow_node:main',
+            'wall_follow_pid=bolide_wall_follow.wall_follow_pid:main',
         ],
     },
 )
