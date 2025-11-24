@@ -9,6 +9,7 @@ Recule automatiquement si obstacle a 30cm ou moins.
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
+from bolide_interfaces.msg import MultipleRange
 from std_msgs.msg import Float32, Bool
 import math
 import time
@@ -49,6 +50,8 @@ class ObstacleChecker(Node):
         # Subscriber
         self.sub_scan = self.create_subscription(
             LaserScan, '/scan', self.scan_callback, 10)
+        self.sub_ir_back = self.create_subscription(
+            MultipleRange, '/raw_rear_range_data', self.check_back, 10)
         
         # Timer pour gerer les sequences temporelles
         self.timer = self.create_timer(0.1, self.state_machine_update)
@@ -211,6 +214,33 @@ class ObstacleChecker(Node):
         
         self.pub_speed.publish(reverse_speed)
         self.pub_dir.publish(reverse_dir)
+
+    def check_back(self, msg):
+        """Verifie les capteurs IR arrieres pour eviter les collisions en reculant."""
+        min_distance = float('inf')
+        
+        # Acceder aux champs du message MultipleRange
+        ranges = [msg.ir_rear_left.range, msg.ir_rear_right.range, msg.sonar_rear.range]
+        
+        for distance in ranges:
+            if not math.isnan(distance) and not math.isinf(distance):
+                if distance < min_distance:
+                    min_distance = distance
+        
+        # Seuil de securite pour l'arriere (par exemple 0.2m)
+        back_obstacle_threshold = 0.2
+        
+        if self.state == 'reversing':
+            if min_distance < back_obstacle_threshold:
+                self.get_logger().error(
+                    f"OBSTACLE ARRIERE DETECTE! Distance: {min_distance:.2f}m - Arret du recul")
+                # Arreter le recul immediatement
+                self.state = 'normal'
+                self.emergency_active = False
+                self.stop_vehicle()
+        else:
+            self.get_logger().info(
+                f"Clear path REAR - Min distance: {min_distance:.2f}m")
 
 
 def main(args=None):

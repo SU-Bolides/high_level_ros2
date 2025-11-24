@@ -45,17 +45,16 @@ class LidarFrontOnly(Node):
         if self.count % 10 != 0:
             return
         
-        # Tester plusieurs angles autour de 0 (avant) ET 180 (arrière)
-        angles_back = [160, 165, 170, 175, 180, -175, -170, -165, -160]
-        
-        
+        # Tester plusieurs angles : de -180° à 180° par pas de 10°
+        angles = list(range(-180, 181, 10))
+
         self.get_logger().info("\n" + "=" * 80)
-        self.get_logger().info("DISTANCES AUTOUR DE L'ARRIERE (180 deg):")
+        self.get_logger().info("DISTANCES POUR TOUS LES ANGLES (-180 à 180 tous les 10°):")
         self.get_logger().info("-" * 80)
-        
-        valid_readings_back = []
-        
-        for angle_deg in angles_back:
+
+        valid_readings = []
+
+        for angle_deg in angles:
             angle_rad = math.radians(angle_deg)
             
             # Vérifier que l'angle est dans la plage
@@ -88,18 +87,18 @@ class LidarFrontOnly(Node):
                     marker = " * Visible *"
                 
                 self.get_logger().info(f"  {angle_deg:>4}deg : {distance:.3f}m{marker}")
-                valid_readings_back.append((angle_deg, distance))
+                valid_readings.append((angle_deg, distance))
         
         # Résumé
         self.get_logger().info("\n" + "=" * 80)
         self.get_logger().info("RESUME:")
         self.get_logger().info("-" * 80)
              
-        if valid_readings_back:
-            min_reading_back = min(valid_readings_back, key=lambda x: x[1])
-            self.get_logger().info(f"ARRIERE - Obstacle le plus proche: {min_reading_back[1]:.3f}m a {min_reading_back[0]}deg")
+        if valid_readings:
+            min_reading = min(valid_readings, key=lambda x: x[1])
+            self.get_logger().info(f"TOUS_ANGLES - Obstacle le plus proche: {min_reading[1]:.3f}m a {min_reading[0]}deg")
         else:
-            self.get_logger().info("ARRIERE - Aucune lecture valide!")
+            self.get_logger().info("TOUS_ANGLES - Aucune lecture valide!")
         
         self.get_logger().info("=" * 80 + "\n")
 

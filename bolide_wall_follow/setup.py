@@ -25,6 +25,7 @@ setup(
         'console_scripts': [
             'wall_follow=bolide_wall_follow.wall_follow_node:main',
             'wall_follow_pid=bolide_wall_follow.wall_follow_pid:main',
+            'lidar_front_only=bolide_wall_follow.lidar_front_only:main',
         ],
     },
 )

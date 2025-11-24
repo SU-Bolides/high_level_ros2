@@ -58,15 +58,15 @@ def generate_launch_description():
             name='wall_follow_pid',
             output='screen',
             parameters=[
-                {'kp': 10.0},
+                {'kp': 12.0},
                 {'ki': 0.0},
                 {'kd': 1.0},
-                {'target_distance': 0.8},
+                {'target_distance': 0.3},
                 {'wall_side': -90.0},
                 {'front_angle_range': 15.0},
                 {'obstacle_threshold': 1.0},
-                {'max_speed': 0.5},
-                {'min_speed': 0.1}
+                {'max_speed': 0.03},
+                {'min_speed': 0.02}
             ],
             respawn=True
         ),

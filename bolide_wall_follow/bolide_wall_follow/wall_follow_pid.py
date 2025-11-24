@@ -19,15 +19,15 @@ class WallFollowPID(Node):
         super().__init__('wall_follow_pid')
 
         # Paramètres PID
-        self.declare_parameter('kp', 10.0)
+        self.declare_parameter('kp', 12.0)
         self.declare_parameter('ki', 0.0)
         self.declare_parameter('kd', 1.0)
-        self.declare_parameter('target_distance', 0.8)  # Distance cible au mur en mètres
-        self.declare_parameter('wall_side', -90.0)  # Angle du mur à suivre (degrés, négatif pour gauche)
+        self.declare_parameter('target_distance', 0.3)  # Distance cible au mur en mètres
+        self.declare_parameter('wall_side', 90.0)  # Angle du mur à suivre (degrés, négatif pour gauche)
         self.declare_parameter('front_angle_range', 15.0)  # Demi-plage pour détecter obstacles devant (degrés)
         self.declare_parameter('obstacle_threshold', 1.0)  # Distance seuil pour obstacle devant (m)
-        self.declare_parameter('max_speed', 0.5)  # Vitesse max normalisée (0-1)
-        self.declare_parameter('min_speed', 0.1)  # Vitesse min pour éviter arrêt
+        self.declare_parameter('max_speed', 0.04)  # Vitesse max normalisée (0-1)
+        self.declare_parameter('min_speed', 0.02)  # Vitesse min pour éviter arrêt
 
         self.kp = self.get_parameter('kp').value
         self.ki = self.get_parameter('ki').value
@@ -63,6 +63,7 @@ class WallFollowPID(Node):
         angle_min_deg = math.degrees(msg.angle_min)
         angle_max_deg = math.degrees(msg.angle_max)
         angle_increment_deg = math.degrees(msg.angle_increment)
+        print(f"Angle min: {angle_min_deg:.2f}°, Angle max: {angle_max_deg:.2f}°, Wall side: {self.wall_side}°")
 
         # Fonction pour obtenir l'index d'un angle
         def get_index(angle_deg):
@@ -74,9 +75,15 @@ class WallFollowPID(Node):
         # Calculer la distance au mur (côté)
         wall_index = get_index(self.wall_side)
         wall_distance = msg.ranges[wall_index]
+        print(f"Wall index: {wall_index}, Wall distance: {wall_distance}, Range max: {msg.range_max}")
         if math.isinf(wall_distance) or math.isnan(wall_distance) or wall_distance > msg.range_max:
             self.get_logger().warn("Invalid wall distance, skipping")
             return
+
+        # Distance à 180 degrés (devant)
+        front_index = get_index(180.0)
+        front_distance = msg.ranges[front_index]
+        print(f"Distance à 180 degrés: {front_distance:.2f}m")
 
         # Erreur : différence entre distance cible et actuelle
         error = self.target_distance - wall_distance
@@ -94,7 +101,7 @@ class WallFollowPID(Node):
             self.prev_time = current_time
 
             # Limiter la direction (degrés)
-            direction_cmd = max(-15.0, min(15.0, direction_cmd))
+            direction_cmd = max(-20.0, min(20.0, direction_cmd))
         else:
             direction_cmd = 0.0
 
@@ -105,11 +112,11 @@ class WallFollowPID(Node):
                           if not math.isinf(msg.ranges[i]) and not math.isnan(msg.ranges[i]) and msg.ranges[i] <= msg.range_max]
         if front_distances:
             min_front_distance = min(front_distances)
-            if min_front_distance < self.obstacle_threshold:
+            if min_front_distance < self.obstacle_threshold and min_front_distance > 0.3:
                 # Obstacle devant : ralentir et tourner plus fort
                 speed_cmd = self.min_speed
                 direction_cmd *= 2.0  # Augmenter la correction
-                direction_cmd = max(-15.0, min(15.0, direction_cmd))
+                direction_cmd = max(-20.0, min(20.0, direction_cmd))
                 self.get_logger().warn(f"Obstacle detected at {min_front_distance:.2f}m, slowing down")
             else:
                 # Pas d'obstacle : vitesse normale
