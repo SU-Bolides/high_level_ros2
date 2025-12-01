@@ -10,7 +10,7 @@ Angles devant : 165° à 195° environ.
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32,Bool
 import math
 import numpy as np
 
@@ -56,14 +56,34 @@ class WallFollowPID(Node):
             10
         )
 
+        # Emergency stop subscriber
+        self.emergency_subscriber = self.create_subscription(
+            Bool,
+            '/emergency_stop',
+            self.emergency_callback,
+            10
+        )
+
+        self.emergency_stop = False
+
         self.get_logger().info("Wall Follow PID node initialized")
 
+    def emergency_callback(self, msg):
+        self.emergency_stop = msg.data
+        if self.emergency_stop:
+            self.get_logger().warn("Emergency stop activated - Wall follow paused")
+        else:
+            self.get_logger().info("Emergency stop deactivated - Wall follow resumed")
+
     def scan_callback(self, msg):
+        # Skip processing if emergency stop is active
+        if self.emergency_stop:
+            return
         # Convertir les angles en degrés (ROS utilise radians)
         angle_min_deg = math.degrees(msg.angle_min)
         angle_max_deg = math.degrees(msg.angle_max)
         angle_increment_deg = math.degrees(msg.angle_increment)
-        print(f"Angle min: {angle_min_deg:.2f}°, Angle max: {angle_max_deg:.2f}°, Wall side: {self.wall_side}°")
+        # print(f"Angle min: {angle_min_deg:.2f}°, Angle max: {angle_max_deg:.2f}°, Wall side: {self.wall_side}°")
 
         # Fonction pour obtenir l'index d'un angle
         def get_index(angle_deg):
@@ -75,7 +95,7 @@ class WallFollowPID(Node):
         # Calculer la distance au mur (côté)
         wall_index = get_index(self.wall_side)
         wall_distance = msg.ranges[wall_index]
-        print(f"Wall index: {wall_index}, Wall distance: {wall_distance}, Range max: {msg.range_max}")
+        # print(f"Wall index: {wall_index}, Wall distance: {wall_distance}, Range max: {msg.range_max}")
         if math.isinf(wall_distance) or math.isnan(wall_distance) or wall_distance > msg.range_max:
             self.get_logger().warn("Invalid wall distance, skipping")
             return
@@ -101,7 +121,7 @@ class WallFollowPID(Node):
             self.prev_time = current_time
 
             # Limiter la direction (degrés)
-            direction_cmd = max(-20.0, min(20.0, direction_cmd))
+            direction_cmd = max(-50.0, min(50.0, direction_cmd))
         else:
             direction_cmd = 0.0
 
@@ -116,7 +136,7 @@ class WallFollowPID(Node):
                 # Obstacle devant : ralentir et tourner plus fort
                 speed_cmd = self.min_speed
                 direction_cmd *= 2.0  # Augmenter la correction
-                direction_cmd = max(-20.0, min(20.0, direction_cmd))
+                direction_cmd = max(-50.0, min(50.0, direction_cmd))
                 self.get_logger().warn(f"Obstacle detected at {min_front_distance:.2f}m, slowing down")
             else:
                 # Pas d'obstacle : vitesse normale

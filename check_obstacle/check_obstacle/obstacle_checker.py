@@ -223,12 +223,12 @@ class ObstacleChecker(Node):
         ranges = [msg.ir_rear_left.range, msg.ir_rear_right.range, msg.sonar_rear.range]
         
         for distance in ranges:
-            if not math.isnan(distance) and not math.isinf(distance):
+            if not math.isnan(distance) and not math.isinf(distance) and distance > 0:
                 if distance < min_distance:
                     min_distance = distance
         
         # Seuil de securite pour l'arriere (par exemple 0.2m)
-        back_obstacle_threshold = 0.2
+        back_obstacle_threshold = 0.1
         
         if self.state == 'reversing':
             if min_distance < back_obstacle_threshold:
@@ -238,9 +238,9 @@ class ObstacleChecker(Node):
                 self.state = 'normal'
                 self.emergency_active = False
                 self.stop_vehicle()
-        else:
-            self.get_logger().info(
-                f"Clear path REAR - Min distance: {min_distance:.2f}m")
+        # else:
+        #     self.get_logger().info(
+        #         f"Clear path REAR - Min distance: {min_distance:.2f}m")
 
 
 def main(args=None):

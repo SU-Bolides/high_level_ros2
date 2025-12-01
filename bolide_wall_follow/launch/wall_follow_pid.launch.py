@@ -65,7 +65,7 @@ def generate_launch_description():
                 {'wall_side': -90.0},
                 {'front_angle_range': 15.0},
                 {'obstacle_threshold': 1.0},
-                {'max_speed': 0.03},
+                {'max_speed': 0.04},
                 {'min_speed': 0.02}
             ],
             respawn=True
