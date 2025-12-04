@@ -31,9 +31,9 @@ class WallFollowPID(Node):
         self.declare_parameter('avoidance_min_dist', 0.5)  # Distance min pour déclencher l'évitement (m)
         self.declare_parameter('avoidance_max_dist', 2.0)  # Distance max pour l'évitement (m)
         self.declare_parameter('free_space_min', 2.0)  # Distance min pour considérer espace libre (m)
-        self.declare_parameter('avoidance_angle_min', 90)  # Angle min pour scanner l'évitement (degrés)
-        self.declare_parameter('avoidance_angle_max', 270)  # Angle max pour scanner l'évitement (degrés)
-        self.declare_parameter('max_steering_angle', 45.0)  # Angle de braquage max (degrés)
+        self.declare_parameter('avoidance_angle_min', 160)  # Angle min pour scanner l'évitement (degrés)
+        self.declare_parameter('avoidance_angle_max', 200)  # Angle max pour scanner l'évitement (degrés)
+        self.declare_parameter('max_steering_angle', 50.0)  # Angle de braquage max (degrés)
 
         self.kp = self.get_parameter('kp').value
         self.ki = self.get_parameter('ki').value
@@ -140,13 +140,13 @@ class WallFollowPID(Node):
                           if not math.isinf(msg.ranges[i]) and not math.isnan(msg.ranges[i]) and msg.ranges[i] <= msg.range_max]
         if front_distances:
             min_front_distance = min(front_distances)
-            if min_front_distance < self.obstacle_threshold and min_front_distance > 0.3:
-                # Obstacle devant : ralentir et tourner plus fort
-                speed_cmd = self.min_speed
-                direction_cmd *= 2.0  # Augmenter la correction
-                direction_cmd = max(-self.max_steering_angle, min(self.max_steering_angle, direction_cmd))
-                self.get_logger().warn(f"Obstacle detected at {min_front_distance:.2f}m, slowing down")
-            elif min_front_distance >= self.avoidance_min_dist and min_front_distance < self.avoidance_max_dist:
+            # if min_front_distance < self.obstacle_threshold and min_front_distance > 0.3:
+            #     # Obstacle devant : ralentir et tourner plus fort
+            #     speed_cmd = self.min_speed
+            #     direction_cmd *= 2.0  # Augmenter la correction
+            #     direction_cmd = max(-self.max_steering_angle, min(self.max_steering_angle, direction_cmd))
+            #     self.get_logger().warn(f"Obstacle detected at {min_front_distance:.2f}m, slowing down")
+            if min_front_distance >= self.avoidance_min_dist and min_front_distance < self.avoidance_max_dist:
                 # Évitement actif
                 best_direction = self.find_free_direction(msg, get_index)
                 if best_direction is not None:
