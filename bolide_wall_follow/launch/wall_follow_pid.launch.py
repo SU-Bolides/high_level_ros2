@@ -58,7 +58,7 @@ def generate_launch_description():
             name='wall_follow_pid',
             output='screen',
             parameters=[
-                {'kp': 12.0},
+                {'kp': 14.0},
                 {'ki': 0.0},
                 {'kd': 1.0},
                 {'target_distance': 0.3},

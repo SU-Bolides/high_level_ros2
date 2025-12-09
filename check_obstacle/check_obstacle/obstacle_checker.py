@@ -20,11 +20,11 @@ class ObstacleChecker(Node):
         super().__init__('obstacle_checker')
         
         # Parametres
-        self.declare_parameter('obstacle_distance', 0.3)
+        self.declare_parameter('obstacle_distance', 0.2)
         self.declare_parameter('debug', True)
         self.declare_parameter('neutral_duration', 2)  # Duree phase neutre (secondes)
-        self.declare_parameter('reverse_duration', 1)  # Duree recul (secondes)
-        self.declare_parameter('reverse_speed', -0.06)   # Vitesse de recul
+        self.declare_parameter('reverse_duration', 2)  # Duree recul (secondes)
+        self.declare_parameter('reverse_speed', -0.08)   # Vitesse de recul
         
         self.obstacle_distance = self.get_parameter('obstacle_distance').value
         self.debug = self.get_parameter('debug').value
@@ -110,7 +110,7 @@ class ObstacleChecker(Node):
         
         # Scanner UNIQUEMENT l'arc DEVANT: 150° à 210° (180° ± 30°)
         # 180° = devant de la voiture
-        for angle_deg in range(150, 211, 5):
+        for angle_deg in range(120, 230, 5):
             angle_rad = math.radians(angle_deg)
             
             # Verifier que l'angle est dans la plage du LIDAR
@@ -126,9 +126,11 @@ class ObstacleChecker(Node):
             
             # Ignorer les valeurs invalides
             if math.isnan(distance) or math.isinf(distance):
+                distance = 0.1
                 continue
             
             if distance < msg.range_min or distance >= msg.range_max:
+                distance = 0.1
                 continue
             
             # Traquer la distance minimale
