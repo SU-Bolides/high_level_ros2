@@ -25,7 +25,7 @@ setup(
         'console_scripts': [
             'wall_follow=bolide_wall_follow.wall_follow_node:main',
             'wall_follow_pid=bolide_wall_follow.wall_follow_pid:main',
-            'lidar_front_only=bolide_wall_follow.lidar_front_only:main',
-        ],
+            'lidar_front_only=bolide_wall_follow.lidar_front_only:main',            'ransac_wall_follow=bolide_wall_follow.ransac_wall_follow:main',
+            'potential_field=bolide_wall_follow.potential_field_navigator:main',        ],
     },
 )
