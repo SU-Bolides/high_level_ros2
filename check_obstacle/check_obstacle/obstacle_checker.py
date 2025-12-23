@@ -40,7 +40,7 @@ class ObstacleChecker(Node):
         self.last_obstacle_distance = 0.0
         
         # Machine d'etats pour le recul
-        # Etats possibles: 'normal', 'stopping', 'neutral', 'reversing'
+        # Etats : 'normal', 'stopping', 'neutral', 'reversing'
         self.state = 'normal'
         self.state_start_time = 0.0
         
@@ -49,13 +49,13 @@ class ObstacleChecker(Node):
         self.pub_dir = self.create_publisher(Float32, '/cmd_dir', 10)
         self.pub_emergency = self.create_publisher(Bool, '/emergency_stop', 10)
         
-        # Subscriber
+        # Subscribers
         self.sub_scan = self.create_subscription(
             LaserScan, '/scan', self.scan_callback, 10)
         self.sub_ir_back = self.create_subscription(
             MultipleRange, '/raw_rear_range_data', self.check_back, 10)
         
-        # Timer pour gerer les sequences temporelles
+        # Timer pour gerer les sequences de la machine a états
         self.timer = self.create_timer(0.1, self.state_machine_update)
         
         self.get_logger().info("=" * 60)
@@ -250,7 +250,7 @@ class ObstacleChecker(Node):
                 if distance < min_distance:
                     min_distance = distance
         
-        # Seuil de securite pour l'arriere (par exemple 0.2m)
+        # Seuil de securite pour l'arriere (10cm ici)
         back_obstacle_threshold = 0.1
         
         if self.state == 'reversing':
