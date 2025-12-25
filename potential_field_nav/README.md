@@ -5,7 +5,7 @@ This package contains a Potential Field based navigator designed to navigate unk
 The navigator combines an attractive forward vector with repulsive forces computed from LIDAR scans to produce smooth steering and speed commands suitable for navigation in unknown tracks.
 high_level_ros2\images\potential_nav_scheme.png
 ## How it works
-![](/high_level_ros2/images/potential_nav_scheme.png)
+![](/images/potential_nav_scheme.png)
 
 Basically, we make the car being "pushed" away from obstacles detected by the LIDAR while being "pulled" forward along the track centerline.
 
