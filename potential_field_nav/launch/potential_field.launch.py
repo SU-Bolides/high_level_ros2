@@ -52,7 +52,7 @@ def generate_launch_description():
             respawn=True
         ),
         Node(
-            package='bolide_wall_follow',
+            package='potential_field_nav',
             executable='potential_field',
             name='potential_field',
             output='screen',

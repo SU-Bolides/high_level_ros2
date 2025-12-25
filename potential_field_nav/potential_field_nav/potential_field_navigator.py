@@ -45,14 +45,6 @@ class PotentialFieldNavigator(Node):
         try:
             if self.emergency_stop:
                 self.get_logger().warn("Emergency stop active - skipping potential field processing")
-                # Publish zero commands to stop the car : should not be needed TODO : TEST
-                # speed_cmd = Float32()
-                # speed_cmd.data = 0.0
-                # self.cmd_vel_pub.publish(speed_cmd)
-
-                # dir_cmd = Float32()
-                # dir_cmd.data = 0.0
-                # self.cmd_dir_pub.publish(dir_cmd)
                 return
             # Compute repulsive field from obstacles
             rep_x = 0.0
@@ -90,16 +82,6 @@ class PotentialFieldNavigator(Node):
             # Compute resulting angle and magnitude
             resultant_angle = math.atan2(total_y, total_x)
             resultant_mag = math.hypot(total_x, total_y)
-
-            # Safety stop triggered by very close obstacle -> publish /emergency_stop for ObstacleChecker
-            # if min_front < self.stop_distance:
-            #     self.get_logger().error(f"EMERGENCY STOP: obstacle at {min_front:.2f} m in front")
-            #     em = Bool(); em.data = True
-            #     self.pub_emergency.publish(em)
-            #     # publish immediate halt locally
-            #     v = Float32(); v.data = 0.0; self.cmd_vel_pub.publish(v)
-            #     d = Float32(); d.data = 0.0; self.cmd_dir_pub.publish(d)
-            #     return
 
             # Convert to steering angle (degrees) based on resultant_angle
             steering_deg = math.degrees(resultant_angle)

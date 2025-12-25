@@ -18,14 +18,14 @@ setup(
     zip_safe=True,
     maintainer='voiture',
     maintainer_email='minh_nhut.nguyen@etu.sorbonne-universite.fr',
-    description='TODO: Package description',
+    description='Wall Follow package with a lidar debug node',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'wall_follow=bolide_wall_follow.wall_follow_node:main',
             'wall_follow_pid=bolide_wall_follow.wall_follow_pid:main',
-            'lidar_front_only=bolide_wall_follow.lidar_front_only:main',            'ransac_wall_follow=bolide_wall_follow.ransac_wall_follow:main',
-            'potential_field=bolide_wall_follow.potential_field_navigator:main',        ],
+            'lidar_front_only=bolide_wall_follow.lidar_front_only:main',
+        ],
     },
 )
