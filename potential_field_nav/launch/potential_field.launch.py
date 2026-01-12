@@ -54,7 +54,7 @@ def generate_launch_description():
         Node(
             package='potential_field_nav',
             executable='potential_field',
-            name='potential_field',
+            name='potential_field_node',
             output='screen',
             respawn=True
         ),

@@ -17,11 +17,11 @@ class PotentialFieldNavigator(Node):
         super().__init__('potential_field_navigator')
 
         # Variables
-        self.max_speed = 0.06 
+        self.max_speed = 0.08 
         self.min_speed = 0.02 
         self.max_steering_angle_deg = 45.0  # degrees
         self.influence_distance = 2.0  # m: obstacles within this distance contribute
-        self.k_repulsive = 0.8  # repulsive gain    TODO: adjust to try and have less oscillations
+        self.k_repulsive = 0.6  # repulsive gain    TODO: adjust to try and have less oscillations
         self.k_attractive = 1.0 # attractive gain
         # self.stop_distance = 0.25     # should not be needed with emergency stop to verify
         self.smoothing_alpha = 0.25

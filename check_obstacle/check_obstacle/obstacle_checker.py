@@ -23,7 +23,7 @@ class ObstacleChecker(Node):
         self.declare_parameter('obstacle_distance', 0.2)
         self.declare_parameter('debug', True)
         self.declare_parameter('neutral_duration', 2)  # Duree phase neutre (secondes)
-        self.declare_parameter('reverse_duration', 2)  # Duree recul (secondes)
+        self.declare_parameter('reverse_duration', 3)  # Duree recul (secondes)
         self.declare_parameter('reverse_speed', -0.08)   # Vitesse de recul
         self.declare_parameter('reverse_turn_angle', 30.0)  # Angle de braquage (degrés) pour tourner pendant le recul
         
@@ -207,8 +207,7 @@ class ObstacleChecker(Node):
         self.pub_dir.publish(neutral_dir)
     
     def reverse_vehicle(self):
-        """Recule la voiture en braquant les roues dans la direction opposée
-        à l'obstacle détecté pour se dégager plus rapidement."""
+        """Recule la voiture tout droit pour se dégager de l'obstacle."""
 
         self.set_neutral()  # Assurer que la voiture est a l'arret avant de reculer
         reverse_speed = Float32()
@@ -217,23 +216,10 @@ class ObstacleChecker(Node):
         # Vitesse negative pour reculer
         reverse_speed.data = self.reverse_speed
 
-        # Calculer la direction de braquage : tourner DANS la direction de l'obstacle
-        # Pour reculer et s'éloigner, on braque vers l'obstacle détecté
-        # last_obstacle_angle est en degrés (ex: <180 = gauche, >180 = droite)
-        try:
-            delta = self.last_obstacle_angle - 180.0
-            if delta == 0:
-                turn_angle = 0.0
-            else:
-                # braquer vers l'obstacle (si delta < 0 => gauche => braquer gauche (-angle))
-                turn_angle = math.copysign(self.reverse_turn_angle, delta)
-        except Exception:
-            # En cas d'erreur, ne pas braquer
-            turn_angle = 0.0
+        # Reculer tout droit (pas de braquage)
+        reverse_dir.data = 0.0
 
-        reverse_dir.data = float(turn_angle)
-
-        self.get_logger().info(f"Recul avec braquage {reverse_dir.data:.1f}° pour dégager obstacle à {self.last_obstacle_angle}°")
+        self.get_logger().info(f"Recul tout droit pour dégager obstacle (distance {self.last_obstacle_distance:.2f}m, angle {self.last_obstacle_angle}°)")
 
         self.pub_speed.publish(reverse_speed)
         self.pub_dir.publish(reverse_dir)
