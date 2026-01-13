@@ -20,19 +20,17 @@ class ObstacleChecker(Node):
         super().__init__('obstacle_checker')
         
         # Parametres
-        self.declare_parameter('obstacle_distance', 0.2)
+        self.declare_parameter('obstacle_distance', 0.25)
         self.declare_parameter('debug', True)
         self.declare_parameter('neutral_duration', 2)  # Duree phase neutre (secondes)
         self.declare_parameter('reverse_duration', 3)  # Duree recul (secondes)
         self.declare_parameter('reverse_speed', -0.08)   # Vitesse de recul
-        self.declare_parameter('reverse_turn_angle', 30.0)  # Angle de braquage (degrés) pour tourner pendant le recul
         
         self.obstacle_distance = self.get_parameter('obstacle_distance').value
         self.debug = self.get_parameter('debug').value
         self.neutral_duration = self.get_parameter('neutral_duration').value
         self.reverse_duration = self.get_parameter('reverse_duration').value
         self.reverse_speed = self.get_parameter('reverse_speed').value
-        self.reverse_turn_angle = self.get_parameter('reverse_turn_angle').value
         
         # Etat
         self.emergency_active = False
@@ -112,7 +110,7 @@ class ObstacleChecker(Node):
         
         # Scanner UNIQUEMENT l'arc DEVANT: 150° à 210° (180° ± 30°)
         # 180° = devant de la voiture
-        for angle_deg in range(120, 230, 5):
+        for angle_deg in range(150, 210, 3):
             angle_rad = math.radians(angle_deg)
             
             # Verifier que l'angle est dans la plage du LIDAR
@@ -219,7 +217,7 @@ class ObstacleChecker(Node):
         # Reculer tout droit (pas de braquage)
         reverse_dir.data = 0.0
 
-        self.get_logger().info(f"Recul tout droit pour dégager obstacle (distance {self.last_obstacle_distance:.2f}m, angle {self.last_obstacle_angle}°)")
+        self.get_logger().info(f"Recul pour dégager obstacle (distance {self.last_obstacle_distance:.2f}m, angle {self.last_obstacle_angle}°)")
 
         self.pub_speed.publish(reverse_speed)
         self.pub_dir.publish(reverse_dir)
@@ -236,8 +234,8 @@ class ObstacleChecker(Node):
                 if distance < min_distance:
                     min_distance = distance
         
-        # Seuil de securite pour l'arriere (10cm ici)
-        back_obstacle_threshold = 0.1
+        # Seuil de securite pour l'arriere (15cm ici)
+        back_obstacle_threshold = 0.15
         
         if self.state == 'reversing':
             if min_distance < back_obstacle_threshold:

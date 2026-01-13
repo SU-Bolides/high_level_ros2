@@ -114,7 +114,15 @@ class WallFollow(Node):
         else:
             speed_msg.data = 0.03
         self.pub_dir.publish(drive_msg)
+        try:
+            self.pub_dir_raw.publish(drive_msg)
+        except Exception:
+            pass
         self.pub_speed.publish(speed_msg)
+        try:
+            self.pub_speed_raw.publish(speed_msg)
+        except Exception:
+            pass
 
     def scan_callback(self, scan_msg):
         # PRIORITE 1: Verifier si arret d'urgence actif

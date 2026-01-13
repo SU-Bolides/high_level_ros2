@@ -19,20 +19,23 @@ class PotentialFieldNavigator(Node):
         # Variables
         self.max_speed = 0.08 
         self.min_speed = 0.02 
-        self.max_steering_angle_deg = 45.0  # degrees
-        self.influence_distance = 2.0  # m: obstacles within this distance contribute
-        self.k_repulsive = 0.6  # repulsive gain    TODO: adjust to try and have less oscillations
-        self.k_attractive = 1.0 # attractive gain
+        self.max_steering_angle_deg = 30.0  # degrees
+        self.influence_distance = 1.0  # m: obstacles within this distance contribute
+        self.k_repulsive = 0.3  # repulsive gain    TODO: adjust to try and have less oscillations
+        self.k_attractive = 0.6 # attractive gain
         # self.stop_distance = 0.25     # should not be needed with emergency stop to verify
-        self.smoothing_alpha = 0.25
+        self.smoothing_alpha = 0.4
 
         # Smoothed command state
         self.smoothed_linear = 0.0
         self.smoothed_steering = 0.0  # degrees
 
-        # Publisher / Subscriber
-        self.cmd_vel_pub = self.create_publisher(Float32, '/cmd_vel', 10)
-        self.cmd_dir_pub = self.create_publisher(Float32, '/cmd_dir', 10)
+        # Publisher / Subscriber (namespaced to allow a navigation master to select algorithm outputs)
+        self.cmd_vel_pub = self.create_publisher(Float32, '/potential_field/cmd_vel', 10)
+        self.cmd_dir_pub = self.create_publisher(Float32, '/potential_field/cmd_dir', 10)
+        # Also keep publishing on original topics for backward compatibility - you can comment these out if not needed
+        self.cmd_vel_pub_raw = self.create_publisher(Float32, '/cmd_vel', 10)
+        self.cmd_dir_pub_raw = self.create_publisher(Float32, '/cmd_dir', 10)
         self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, 10)
 
         # Emergency stop subscription (Bool): published by check_obstacle/obstacle_checker
@@ -96,7 +99,7 @@ class PotentialFieldNavigator(Node):
             lin_cmd = self.min_speed + (self.max_speed - self.min_speed) * mag_fraction
 
             # Reduce speed when turning sharply or when front obstacle is near
-            lin_cmd *= max(0.2, 1.0 - abs(steering_norm))
+            lin_cmd *= max(0.3, 1.0 - abs(steering_norm))
             if min_front < 1.0:
                 lin_cmd *= min_front / 1.0
 
@@ -116,10 +119,19 @@ class PotentialFieldNavigator(Node):
             speed_cmd = Float32()
             speed_cmd.data = float(self.smoothed_linear)
             self.cmd_vel_pub.publish(speed_cmd)
+            # Also publish to the original topic for compatibility
+            try:
+                self.cmd_vel_pub_raw.publish(speed_cmd)
+            except Exception:
+                pass
 
             dir_cmd = Float32()
             dir_cmd.data = float(self.smoothed_steering)
             self.cmd_dir_pub.publish(dir_cmd)
+            try:
+                self.cmd_dir_pub_raw.publish(dir_cmd)
+            except Exception:
+                pass
 
         except Exception as e:
             self.get_logger().error(f"Error in scan_callback: {str(e)}")

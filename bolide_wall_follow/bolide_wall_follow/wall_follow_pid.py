@@ -46,9 +46,12 @@ class WallFollowPID(Node):
         self.integral = 0.0
         self.prev_time = self.get_clock().now()
         self.emergency_stop = False
-        # Publishers
-        self.dir_publisher = self.create_publisher(Float32, '/cmd_dir', 10)
-        self.vel_publisher = self.create_publisher(Float32, '/cmd_vel', 10)
+        # Publishers (namespaced to allow a navigation master to select algorithm outputs)
+        self.dir_publisher = self.create_publisher(Float32, '/wall_follow/cmd_dir', 10)
+        self.vel_publisher = self.create_publisher(Float32, '/wall_follow/cmd_vel', 10)
+        # Keep original topics too for backward compatibility (you can comment these out)
+        self.dir_publisher_raw = self.create_publisher(Float32, '/cmd_dir', 10)
+        self.vel_publisher_raw = self.create_publisher(Float32, '/cmd_vel', 10)
 
         # Subscriber
         self.scan_subscriber = self.create_subscription(
@@ -149,10 +152,18 @@ class WallFollowPID(Node):
             dir_msg = Float32()
             dir_msg.data = direction_cmd
             self.dir_publisher.publish(dir_msg)
+            try:
+                self.dir_publisher_raw.publish(dir_msg)
+            except Exception:
+                pass
 
             vel_msg = Float32()
             vel_msg.data = speed_cmd
             self.vel_publisher.publish(vel_msg)
+            try:
+                self.vel_publisher_raw.publish(vel_msg)
+            except Exception:
+                pass
 
         # Logging
             self.get_logger().info(f"Wall dist: {wall_distance:.2f}, Error: {error:.2f}, Dir: {direction_cmd:.2f}, Vel: {speed_cmd:.2f}")
