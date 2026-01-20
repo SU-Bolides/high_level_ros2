@@ -73,7 +73,7 @@ class ObstacleChecker(Node):
         if self.state == 'stopping':
             # Attendre un peu avant de passer au neutre
             if elapsed >= 0.2:
-                self.get_logger().info("Phase NEUTRE - Preparation au recul")
+                #self.get_logger().info("Phase NEUTRE - Preparation au recul")
                 self.state = 'neutral'
                 self.state_start_time = current_time
                 self.set_neutral()
@@ -81,7 +81,7 @@ class ObstacleChecker(Node):
         elif self.state == 'neutral':
             # Phase neutre avant recul
             if elapsed >= self.neutral_duration:
-                self.get_logger().warn(f"RECUL en cours ({self.reverse_duration}s)")
+                #self.get_logger().warn(f"RECUL en cours ({self.reverse_duration}s)")
                 self.state = 'reversing'
                 self.state_start_time = current_time
                 self.reverse_vehicle()
@@ -92,7 +92,7 @@ class ObstacleChecker(Node):
             
             # Fin du recul
             if elapsed >= self.reverse_duration:
-                self.get_logger().info("Recul termine - Retour au mode normal")
+                #self.get_logger().info("Recul termine - Retour au mode normal")
                 self.state = 'normal'
                 self.emergency_active = False
                 self.stop_vehicle()
@@ -234,8 +234,8 @@ class ObstacleChecker(Node):
                 if distance < min_distance:
                     min_distance = distance
         
-        # Seuil de securite pour l'arriere (15cm ici)
-        back_obstacle_threshold = 0.15
+        # Seuil de securite pour l'arriere (5cm ici)
+        back_obstacle_threshold = 0.05
         
         if self.state == 'reversing':
             if min_distance < back_obstacle_threshold:
