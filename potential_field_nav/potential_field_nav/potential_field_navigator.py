@@ -17,14 +17,13 @@ class PotentialFieldNavigator(Node):
         super().__init__('potential_field_navigator')
 
         # Variables
-        self.max_speed = 0.08 
-        self.min_speed = 0.02 
+        self.max_speed = 0.05 
+        self.min_speed = 0.025 
         self.max_steering_angle_deg = 30.0  # degrees
-        self.influence_distance = 1.0  # m: obstacles within this distance contribute
+        self.influence_distance = 3.0  # m: obstacles within this distance contribute
         self.k_repulsive = 0.3  # repulsive gain    TODO: adjust to try and have less oscillations
         self.k_attractive = 0.6 # attractive gain
-        # self.stop_distance = 0.25     # should not be needed with emergency stop to verify
-        self.smoothing_alpha = 0.4
+        self.smoothing_alpha = 0.3
 
         # Smoothed command state
         self.smoothed_linear = 0.0
@@ -61,7 +60,7 @@ class PotentialFieldNavigator(Node):
                 # Calculate the angle for the current laser scan point
                 angle = msg.angle_min + i * msg.angle_increment
                 # Check if this range is the smallest in front (within 40 degrees of 180°)
-                if r < min_front and abs(math.degrees(angle) - 180.0) < 40.0:
+                if r < min_front and abs(math.degrees(angle) - 180.0) < 60.0:
                     min_front = r   # update the closest front obstacle
                     min_front_angle = angle  # not used for now, maybe to add to have better avoidance?
 

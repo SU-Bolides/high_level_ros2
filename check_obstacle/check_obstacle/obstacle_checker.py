@@ -20,10 +20,10 @@ class ObstacleChecker(Node):
         super().__init__('obstacle_checker')
         
         # Parametres
-        self.declare_parameter('obstacle_distance', 0.25)
+        self.declare_parameter('obstacle_distance', 0.5)
         self.declare_parameter('debug', True)
-        self.declare_parameter('neutral_duration', 2)  # Duree phase neutre (secondes)
-        self.declare_parameter('reverse_duration', 3)  # Duree recul (secondes)
+        self.declare_parameter('neutral_duration', 1)  # Duree phase neutre (secondes)
+        self.declare_parameter('reverse_duration', 2)  # Duree recul (secondes)
         self.declare_parameter('reverse_speed', -0.08)   # Vitesse de recul
         
         self.obstacle_distance = self.get_parameter('obstacle_distance').value
