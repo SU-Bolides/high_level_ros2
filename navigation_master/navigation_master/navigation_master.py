@@ -103,10 +103,10 @@ class NavigationMaster(Node):
 
     def emergency_cb(self, msg: Bool):
         self.emergency_stop = bool(msg.data)
-        if self.emergency_stop:
-            self.get_logger().warn('Emergency stop active')
-        else:
-            self.get_logger().info('Emergency stop cleared')
+        # if self.emergency_stop:
+        #     self.get_logger().warn('Emergency stop active')
+        # else:
+        #     self.get_logger().info('Emergency stop cleared')
 
     def timer_cb(self):
         # Publish active algorithm output (vel, dir)
