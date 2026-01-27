@@ -18,25 +18,29 @@ class UnifiedPotentialFieldNavigator(Node):
     def __init__(self):
         super().__init__('unified_potential_field_navigator')
 
-        # Speed parameters
-        self.max_speed = 0.04   # don't make this too high or the car will become unstable and will start oscillate (MAX MAX MAKE IT 0.2-3)
-        self.min_speed = 0.015  # under 0.015 the car doesnt really move so i think it's the minimum acceptable
-        
-        # Steering and potential field parameters
-        self.max_steering_angle_deg = 40.0  # degrees
-        self.influence_distance = 4.0  # m: obstacles within this distance contribute
-        self.k_repulsive = 0.4  # repulsive gain
-        self.k_attractive = 1.0  # attractive gain
-        
-        # Smoothing parameter : tweak it a bit to your liking, 0.2-4 is usually good less is a bit too smooth and unresponsive
-        self.smoothing_alpha = 0.3  # small = very smooth, large = less smooth more oscillations but more reactive to obstacles
-        
-        # Threshold distances to slow down based on front obstacle proximity
-        self.front_obstacle_threshold = 2.0  # Start slowing down at this distance
-        self.critical_obstacle_distance = 0.5  # Use min_speed at this distance
-        
-        # Magnitude below wich steering is largely reduced to avoid oscillations : we want it to correspond to when the car is centered on the track approximately
-        self.repulsive_deadzone = 100  # Deadzone for small repulsive forces
+        # Declare parameters
+        self.declare_parameter('max_speed', 0.04)
+        self.declare_parameter('min_speed', 0.015)
+        self.declare_parameter('max_steering_angle_deg', 40.0)
+        self.declare_parameter('influence_distance', 4.0)
+        self.declare_parameter('k_repulsive', 0.4)
+        self.declare_parameter('k_attractive', 1.0)
+        self.declare_parameter('smoothing_alpha', 0.3)
+        self.declare_parameter('front_obstacle_threshold', 2.0)
+        self.declare_parameter('critical_obstacle_distance', 0.5)
+        self.declare_parameter('repulsive_deadzone', 100.0)
+
+        # Get parameter values
+        self.max_speed = self.get_parameter('max_speed').value
+        self.min_speed = self.get_parameter('min_speed').value
+        self.max_steering_angle_deg = self.get_parameter('max_steering_angle_deg').value
+        self.influence_distance = self.get_parameter('influence_distance').value
+        self.k_repulsive = self.get_parameter('k_repulsive').value
+        self.k_attractive = self.get_parameter('k_attractive').value
+        self.smoothing_alpha = self.get_parameter('smoothing_alpha').value
+        self.front_obstacle_threshold = self.get_parameter('front_obstacle_threshold').value
+        self.critical_obstacle_distance = self.get_parameter('critical_obstacle_distance').value
+        self.repulsive_deadzone = self.get_parameter('repulsive_deadzone').value
 
         # Smoothed state
         self.smoothed_linear = 0.0

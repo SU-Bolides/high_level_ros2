@@ -16,14 +16,23 @@ class PotentialFieldNavigator(Node):
     def __init__(self):
         super().__init__('potential_field_navigator')
 
-        # Variables
-        self.max_speed = 0.07 
-        self.min_speed = 0.02
-        self.max_steering_angle_deg = 40.0  # degrees
-        self.influence_distance = 3.0  # m: obstacles within this distance contribute
-        self.k_repulsive = 0.4  # repulsive gain - réduit pour moins freiner
-        self.k_attractive = 1.0 # attractive gain - augmenté pour favoriser la vitesse
-        self.smoothing_alpha = 0.3
+        # Declare parameters
+        self.declare_parameter('max_speed', 0.07)
+        self.declare_parameter('min_speed', 0.02)
+        self.declare_parameter('max_steering_angle_deg', 40.0)
+        self.declare_parameter('influence_distance', 3.0)
+        self.declare_parameter('k_repulsive', 0.4)
+        self.declare_parameter('k_attractive', 1.0)
+        self.declare_parameter('smoothing_alpha', 0.3)
+
+        # Get parameter values
+        self.max_speed = self.get_parameter('max_speed').value
+        self.min_speed = self.get_parameter('min_speed').value
+        self.max_steering_angle_deg = self.get_parameter('max_steering_angle_deg').value
+        self.influence_distance = self.get_parameter('influence_distance').value
+        self.k_repulsive = self.get_parameter('k_repulsive').value
+        self.k_attractive = self.get_parameter('k_attractive').value
+        self.smoothing_alpha = self.get_parameter('smoothing_alpha').value
 
         # Smoothed command state
         self.smoothed_linear = 0.0

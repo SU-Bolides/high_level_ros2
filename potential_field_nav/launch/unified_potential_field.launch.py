@@ -1,7 +1,5 @@
 import launch
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
 import os
@@ -53,17 +51,20 @@ def generate_launch_description():
         ),
         Node(
             package='potential_field_nav',
-            executable='potential_field',
+            executable='unified_potential_field',
             name='potential_field_node',
             output='screen',
             parameters=[
-                {'max_speed': 0.07},
-                {'min_speed': 0.02},
+                {'max_speed': 0.04},
+                {'min_speed': 0.015},
                 {'max_steering_angle_deg': 40.0},
-                {'influence_distance': 3.0},
+                {'influence_distance': 4.0},
                 {'k_repulsive': 0.4},
                 {'k_attractive': 1.0},
-                {'smoothing_alpha': 0.3}
+                {'smoothing_alpha': 0.3},
+                {'front_obstacle_threshold': 2.0},
+                {'critical_obstacle_distance': 0.5},
+                {'repulsive_deadzone': 100.0}
             ],
             respawn=True
         ),
