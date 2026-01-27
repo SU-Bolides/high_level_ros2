@@ -26,6 +26,7 @@ setup(
     entry_points={
         'console_scripts': [
             'potential_field=potential_field_nav.potential_field_navigator:main',
+            'unified_potential_field=potential_field_nav.potential_field_nav.unified_potential_field_navigator:main',
         ],
     },
 )

@@ -18,11 +18,11 @@ class PotentialFieldNavigator(Node):
 
         # Variables
         self.max_speed = 0.07 
-        self.min_speed = 0.015 
+        self.min_speed = 0.02
         self.max_steering_angle_deg = 40.0  # degrees
         self.influence_distance = 3.0  # m: obstacles within this distance contribute
-        self.k_repulsive = 0.4  # repulsive gain    TODO: adjust to try and have less oscillations
-        self.k_attractive = 0.6 # attractive gain
+        self.k_repulsive = 0.4  # repulsive gain - réduit pour moins freiner
+        self.k_attractive = 1.0 # attractive gain - augmenté pour favoriser la vitesse
         self.smoothing_alpha = 0.3
 
         # Smoothed command state
@@ -94,13 +94,14 @@ class PotentialFieldNavigator(Node):
             steering_norm = max(-1.0, min(1.0, steering_norm))
 
             # Linear command: map resultant magnitude to [min_speed, max_speed] to ensure we stay in bounds of the authorized speed
-            mag_fraction = resultant_mag / (1.0 + resultant_mag)
+            # Use a less aggressive mapping to allow higher speeds
+            mag_fraction = min(1.0, resultant_mag / 1.5)  # Normalize with a lower divisor for higher speeds
             lin_cmd = self.min_speed + (self.max_speed - self.min_speed) * mag_fraction
 
-            # Reduce speed when turning sharply or when front obstacle is near
-            lin_cmd *= max(0.3, 1.0 - abs(steering_norm))
-            if min_front < 1.0:
-                lin_cmd *= min_front / 1.0
+            # Reduce speed when turning sharply or when front obstacle is near (mais moins agressivement)
+            lin_cmd *= max(0.7, 1.0 - 0.3 * abs(steering_norm))  # Réduction moins agressive lors des virages
+            if min_front < 0.8:  # Seuil plus bas pour déclencher la réduction
+                lin_cmd *= max(0.5, min_front / 0.8)  # Limite la réduction à 50%
 
             # Ensure within bounds
             lin_cmd = max(0.0, min(self.max_speed, lin_cmd))
@@ -159,5 +160,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-#---------------------------------------------------------------------------------------------------------------#
