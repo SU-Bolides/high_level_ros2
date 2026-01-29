@@ -8,6 +8,7 @@ The official Sorbonne University ROS2 repository for the CoVaPsy course at ENS P
 - Repository for [Low-Level nodes](https://github.com/SU-Bolides/course_ros2)
 - [Official repository of the race (for schematics)](https://github.com/ajuton-ens/CourseVoituresAutonomesSaclay.git)
 - [Repository of last year (2024)](https://github.com/SU-Bolides/course_2025_slam_pkgs.git) : There is the main branch in ROS and the ROS2 branch
+- Repository for the [3D camera](https://github.com/SU-Bolides/3D_cam-RB5) and every code related to the use of RB5 and 3d camera.
 
 ### High-Level packages
 #### Wall Follower
@@ -34,3 +35,19 @@ For now this controller is not perfect for various reasons :
 - We saw that our car, get some delay in the process, especially when accelerating. This create some obvious problems for a race. We need to check some things to find the reasons :
   - Is our distance calculate by the measure with our Lidar is correct ? Again the simulation can be helpful.
   - Is there a problem between the frequency of data sent between nodes ? At first sight, we weren't able to find a problem here, our cmd_vel_node and cmd_dir_node receive data almost immediatly after getting the data of the Lidar. We could maybe see if it is possible to augment the frequency of the Lidar ?
+
+
+### Potential field navigator
+This package contains a navigation algorithm following the method of potential fields. It is currently the best working reactive algorithm we have (better than the wall follower). Use this one and the unified version in particular for better results. Go and read the README of this package to have more information.
+
+### Troubleshooting
+If you ever encounter these problems try these solutions :
+- If the car doesn't go forward even if commands are published on /cmd_vel  
+&rarr; Press the magic button (the bottom right bottom right next to the little screen saying Sorbonne Bolide)
+&rarr; If the car is not moving but is making a beeeeeeep constantly don't worry it just for whatever reason switched forward and backward. If it happens recalibrate the ESC (explanation how to on the low_level repository README) and it should work again as normal.
+
+- If you have problems with the LIDAR/Dynamixel(U2D2)  
+&rarr; Try unplug and replug them while shutting off the car. The Dynamixel cable is the 3 cables on the alimentation card right next to the X_AX12 text (bottom right on the top of the green part).
+
+- If you want to check and verify the PWM signal sent by the STM32  
+&rarr; Use an oscilloscope and a breadboard to visualize the D9 pin on the STM32. You should see 1000-2000us impulsions. You can find the electric schemes on the Covapsy github.

@@ -55,8 +55,8 @@ def generate_launch_description():
             name='potential_field_node',
             output='screen',
             parameters=[
-                {'max_speed': 0.04},
-                {'min_speed': 0.015},
+                {'max_speed': 0.06},
+                {'min_speed': 0.025},
                 {'max_steering_angle_deg': 40.0},
                 {'influence_distance': 4.0},
                 {'k_repulsive': 0.4},

@@ -14,7 +14,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.py'))),
         # Install the executable wrapper into lib/<package> so ros2 Node can find it
-        (os.path.join('lib', package_name), ['scripts/potential_field']),
+        (os.path.join('lib', package_name), ['scripts/potential_field', 'scripts/unified_potential_field']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -26,7 +26,7 @@ setup(
     entry_points={
         'console_scripts': [
             'potential_field=potential_field_nav.potential_field_navigator:main',
-            'unified_potential_field=potential_field_nav.potential_field_nav.unified_potential_field_navigator:main',
+            'unified_potential_field=potential_field_nav.unified_potential_field_navigator:main',
         ],
     },
 )
